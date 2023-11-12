@@ -24,11 +24,11 @@ def estimate_salary_hh(vacancy_hh):
     Takes a job vacancy dictionary from HeadHunter (vacancy_hh) and returns an
     estimated average salary based on the salary information provided in the vacancy.
     """
-    salaries_hh = 0
+    salary_hh = 0
     salary_from_hh = vacancy_hh['salary']['from']
     salary_to_hh = vacancy_hh['salary']['to']
-    salaries_hh = calculate_avg_salary(salary_from_hh, salary_to_hh)
-    return salaries_hh
+    salary_hh = calculate_avg_salary(salary_from_hh, salary_to_hh)
+    return salary_hh
 
 
 def estimate_salary_sj(vacancy_sj):
@@ -36,11 +36,11 @@ def estimate_salary_sj(vacancy_sj):
     Takes a job vacancy dictionary from SuperJob (vacancy_sj) and returns an
     estimated average salary based on the salary information provided in the vacancy.
     """
-    salaries_sj = 0
+    salary_sj = 0
     salary_from_sj = vacancy_sj['payment_from']
     salary_to_sj = vacancy_sj['payment_to']
-    salaries_sj = calculate_avg_salary(salary_from_sj, salary_to_sj)
-    return salaries_sj
+    salary_sj = calculate_avg_salary(salary_from_sj, salary_to_sj)
+    return salary_sj
 
 
 def create_table(vacancies, title):
