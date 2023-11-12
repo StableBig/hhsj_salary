@@ -163,7 +163,7 @@ def main():
             vacancies_sj_records = page_with_sj_vacancies['objects']
             vacancies_sj_found = page_with_sj_vacancies['total']
             for vacancy_sj in vacancies_sj_records:
-                if vacancy_sj['payment_from'] != 0 or vacancy_sj['payment_to'] != 0:
+                if vacancy_sj['payment_from'] or vacancy_sj['payment_to']:
                     salaries_sj.append(estimate_salary_sj(vacancy_sj))
         try:
             average_sj_salary = sum(salaries_sj) // len(salaries_sj)
