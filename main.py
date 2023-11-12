@@ -105,9 +105,9 @@ def main():
                 break
             time.sleep(2)
         for page_with_hh_vacancies in vacancies_hh:
-            vacancies_items = page_with_hh_vacancies['items']
+            vacancies_records = page_with_hh_vacancies['items']
             vacancies_hh_found = page_with_hh_vacancies['found']
-            for vacancy_hh in vacancies_items:
+            for vacancy_hh in vacancies_records:
                 if vacancy_hh['salary']:
                     salaries_hh.append(estimate_salary_hh(vacancy_hh))
         try:
@@ -160,9 +160,9 @@ def main():
             if page >= max_pages_sj:
                 break
         for page_with_sj_vacancies in vacancies_sj:
-            vacancies_sj_objects = page_with_sj_vacancies['objects']
+            vacancies_sj_records = page_with_sj_vacancies['objects']
             vacancies_sj_found = page_with_sj_vacancies['total']
-            for vacancy_sj in vacancies_sj_objects:
+            for vacancy_sj in vacancies_sj_records:
                 if vacancy_sj['payment_from'] != 0 or vacancy_sj['payment_to'] != 0:
                     salaries_sj.append(estimate_salary_sj(vacancy_sj))
         try:
