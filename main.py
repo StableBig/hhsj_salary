@@ -5,6 +5,14 @@ from itertools import count
 from dotenv import find_dotenv, load_dotenv
 from terminaltables import AsciiTable
 
+HH_MOSCOW_ID = 1
+HH_SEARCH_PERIOD_DAYS = 31
+HH_MAX_PAGES = 20
+HH_MAX_VACANCIES_PER_PAGE = 50
+
+SJ_MAX_RESULTS_PER_PAGE = 100
+SJ_PUBLICATION_PERIOD = 0
+SJ_MAX_PAGES = 5
 
 def calculate_avg_salary(salary_start, salary_end):
     """Calculate the average salary based on the given range."""
@@ -17,20 +25,17 @@ def calculate_avg_salary(salary_start, salary_end):
     else:
         return None
 
-
 def estimate_salary_hh(vacancy_hh):
     """Estimate average salary from HeadHunter vacancy."""
     salary_from_hh = vacancy_hh['salary']['from']
     salary_to_hh = vacancy_hh['salary']['to']
     return calculate_avg_salary(salary_from_hh, salary_to_hh)
 
-
 def estimate_salary_sj(vacancy_sj):
     """Estimate average salary from SuperJob vacancy."""
     salary_from_sj = vacancy_sj['payment_from']
     salary_to_sj = vacancy_sj['payment_to']
     return calculate_avg_salary(salary_from_sj, salary_to_sj)
-
 
 def create_table(vacancies, title):
     """Build a table with given data and header."""
@@ -55,47 +60,37 @@ def create_table(vacancies, title):
     table.title = title
     return table.table
 
-
 def get_hh_vacancies(program_language):
     """Retrieve HeadHunter vacancies for a programming language."""
-    moscow_id = 1
-    amount_of_days = 31
-    max_pages_hh = 20
-    amount_of_vacancies_on_page = 50
     headers_hh = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
     }
-    vacancies_hh_found = 0
-    vacancies_hh_processed = 0
     vacancies_hh = []
-    salaries_hh = []
     for page in count(0):
         payload = {
-            'area': moscow_id,
-            'period': amount_of_days,
+            'area': HH_MOSCOW_ID,
+            'period': HH_SEARCH_PERIOD_DAYS,
             'text': program_language,
-            'per_page': amount_of_vacancies_on_page,
+            'per_page': HH_MAX_VACANCIES_PER_PAGE,
             'page': page
         }
         url_hh = 'https://api.hh.ru/vacancies'
         response = requests.get(url_hh, headers=headers_hh, params=payload)
         response.raise_for_status()
         vacancies_hh.append(response.json())
-        if page >= max_pages_hh:
+        if page >= HH_MAX_PAGES:
             break
-        time.sleep(2)
     return vacancies_hh
-
 
 def collect_hh_vacancy_salaries(vacancies_hh):
     """Collect salary information from HeadHunter vacancies."""
     salaries_hh = []
     for page_with_hh_vacancies in vacancies_hh:
-        for vacancy_hh in page_with_hh_vacancies['items']:
+        hh_vacancy_list = page_with_hh_vacancies['items']
+        for vacancy_hh in hh_vacancy_list:
             if vacancy_hh['salary']:
                 salaries_hh.append(estimate_salary_hh(vacancy_hh))
     return salaries_hh
-
 
 def process_hh_vacancies(vacancies_hh):
     """Process HeadHunter vacancies and calculate statistics."""
@@ -104,49 +99,37 @@ def process_hh_vacancies(vacancies_hh):
     vacancies_hh_processed = len(salaries_hh)
     return vacancies_hh_found, vacancies_hh_processed, salaries_hh
 
-
 def get_sj_vacancies(program_language_sj):
     """Retrieve SuperJob vacancies for a programming language."""
-    max_number_of_results = 100
-    publication_period = 0
-    max_pages_sj = 5
     headers_sj = {
         'X-Api-App-Id': os.environ.get('SUPERJOB_KEY'),
     }
-    vacancies_sj_found = 0
-    vacancies_sj_processed = 0
     vacancies_sj = []
-    salaries_sj = []
     for page in count(0):
         payload_sj = {
             'town': 'Москва',
-            'count': max_number_of_results,
-            'period': publication_period,
+            'count': SJ_MAX_RESULTS_PER_PAGE,
+            'period': SJ_PUBLICATION_PERIOD,
             'keyword': program_language_sj,
             'page': page
         }
         url_sj = 'https://api.superjob.ru/2.0/vacancies'
-        response_sj = requests.get(
-            url_sj,
-            headers=headers_sj,
-            params=payload_sj
-        )
+        response_sj = requests.get(url_sj, headers=headers_sj, params=payload_sj)
         response_sj.raise_for_status()
         vacancies_sj.append(response_sj.json())
-        if page >= max_pages_sj:
+        if page >= SJ_MAX_PAGES:
             break
     return vacancies_sj
-
 
 def collect_sj_vacancy_salaries(vacancies_sj):
     """Collect salary information from SuperJob vacancies."""
     salaries_sj = []
     for page_with_sj_vacancies in vacancies_sj:
-        for vacancy_sj in page_with_sj_vacancies['objects']:
+        sj_vacancy_list = page_with_sj_vacancies['objects']
+        for vacancy_sj in sj_vacancy_list:
             if vacancy_sj['payment_from'] or vacancy_sj['payment_to']:
                 salaries_sj.append(estimate_salary_sj(vacancy_sj))
     return salaries_sj
-
 
 def process_sj_vacancies(vacancies_sj):
     """Process SuperJob vacancies and calculate statistics."""
@@ -154,7 +137,6 @@ def process_sj_vacancies(vacancies_sj):
     vacancies_sj_found = vacancies_sj[0]['total']
     vacancies_sj_processed = len(salaries_sj)
     return vacancies_sj_found, vacancies_sj_processed, salaries_sj
-
 
 def get_hh_vacancies_statistics(popular_languages):
     """Get and process HeadHunter vacancies for multiple languages."""
@@ -174,7 +156,6 @@ def get_hh_vacancies_statistics(popular_languages):
         vacancies_language_hh[program_language] = salary_hh_statistics
     return vacancies_language_hh
 
-
 def get_sj_vacancies_statistics(popular_languages):
     """Get and process SuperJob vacancies for multiple languages."""
     vacancies_language_sj = {}
@@ -193,7 +174,6 @@ def get_sj_vacancies_statistics(popular_languages):
         vacancies_language_sj[program_language_sj] = salary_sj_statistics
     return vacancies_language_sj
 
-
 def main():
     load_dotenv(find_dotenv())
     popular_languages = ['C', 'C++', 'C#', 'Java', 'JavaScript', 'Python', 'Ruby', 'Rust']
@@ -205,7 +185,6 @@ def main():
 
     vacancies_language_sj = get_sj_vacancies_statistics(popular_languages)
     print(create_table(vacancies_language_sj, title_sj))
-
 
 if __name__ == '__main__':
     main()
