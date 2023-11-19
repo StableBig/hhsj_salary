@@ -156,30 +156,30 @@ def main():
         'X-Api-App-Id': sj_key,
     }
 
-    vacancies_language_hh = get_hh_vacancies_info(popular_languages,
-                                                  moscow_id,
-                                                  amount_of_days,
-                                                  max_pages_hh,
-                                                  amount_of_vacancies_on_page,
-                                                  headers_hh)
+    vacancies_language_hh = get_hh_vacancies_statistics(popular_languages,
+                                                        moscow_id,
+                                                        amount_of_days,
+                                                        max_pages_hh,
+                                                        amount_of_vacancies_on_page,
+                                                        headers_hh)
     print(create_table(vacancies_language_hh,
                        title_hh))
 
-    vacancies_language_sj = get_sj_vacancies_info(popular_languages,
-                                                  100,
-                                                  0,
-                                                  5,
-                                                  headers_sj)
+    vacancies_language_sj = get_sj_vacancies_statistics(popular_languages,
+                                                        100,
+                                                        0,
+                                                        5,
+                                                        headers_sj)
     print(create_table(vacancies_language_sj,
                        title_sj))
 
 
-def get_hh_vacancies_info(popular_languages,
-                          moscow_id,
-                          amount_of_days,
-                          max_pages_hh,
-                          amount_of_vacancies_on_page,
-                          headers_hh):
+def get_hh_vacancies_statistics(popular_languages,
+                                moscow_id,
+                                amount_of_days,
+                                max_pages_hh,
+                                amount_of_vacancies_on_page,
+                                headers_hh):
     """Get and process HeadHunter vacancies for multiple languages."""
     vacancies_language_hh = {}
     for program_language in popular_languages:
@@ -202,7 +202,7 @@ def get_hh_vacancies_info(popular_languages,
     return vacancies_language_hh
 
 
-def get_sj_vacancies_info(popular_languages, max_number_of_results, publication_period, max_pages_sj, headers_sj):
+def get_sj_vacancies_statistics(popular_languages, max_number_of_results, publication_period, max_pages_sj, headers_sj):
     """Get and process SuperJob vacancies for multiple languages."""
     vacancies_language_sj = {}
     for program_language_sj in popular_languages:
