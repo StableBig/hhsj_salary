@@ -56,8 +56,15 @@ def create_table(vacancies, title):
     return table.table
 
 
-def get_hh_vacancies(program_language, moscow_id, amount_of_days, max_pages_hh, amount_of_vacancies_on_page, headers_hh):
+def get_hh_vacancies(program_language):
     """Retrieve HeadHunter vacancies for a programming language."""
+    moscow_id = 1
+    amount_of_days = 31
+    max_pages_hh = 20
+    amount_of_vacancies_on_page = 50
+    headers_hh = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+    }
     vacancies_hh_found = 0
     average_hh_salary = 0
     vacancies_hh_processed = 0
@@ -96,8 +103,14 @@ def process_hh_vacancies(vacancies_hh):
     return vacancies_hh_found, vacancies_hh_processed, salaries_hh
 
 
-def get_sj_vacancies(program_language_sj, max_number_of_results, publication_period, max_pages_sj, headers_sj):
+def get_sj_vacancies(program_language_sj):
     """Retrieve SuperJob vacancies for a programming language."""
+    max_number_of_results = 100
+    publication_period = 0
+    max_pages_sj = 5
+    headers_sj = {
+        'X-Api-App-Id': os.environ.get('SUPERJOB_KEY'),
+    }
     vacancies_sj_found = 0
     average_sj_salary = 0
     vacancies_sj_processed = 0
@@ -139,56 +152,11 @@ def process_sj_vacancies(vacancies_sj):
     return vacancies_sj_found, vacancies_sj_processed, salaries_sj
 
 
-def main():
-    load_dotenv(find_dotenv())
-    sj_key = os.environ.get('SUPERJOB_KEY')
-    popular_languages = ['C', 'C++', 'C#', 'Java', 'JavaScript', 'Python', 'Ruby', 'Rust']
-    moscow_id = 1
-    amount_of_days = 31
-    max_pages_hh = 20
-    amount_of_vacancies_on_page = 50
-    title_hh = 'HEADHUNTER (Moscow)'
-    title_sj = 'SUPERJOB (Moscow)'
-    headers_hh = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-    }
-    headers_sj = {
-        'X-Api-App-Id': sj_key,
-    }
-
-    vacancies_language_hh = get_hh_vacancies_statistics(popular_languages,
-                                                        moscow_id,
-                                                        amount_of_days,
-                                                        max_pages_hh,
-                                                        amount_of_vacancies_on_page,
-                                                        headers_hh)
-    print(create_table(vacancies_language_hh,
-                       title_hh))
-
-    vacancies_language_sj = get_sj_vacancies_statistics(popular_languages,
-                                                        100,
-                                                        0,
-                                                        5,
-                                                        headers_sj)
-    print(create_table(vacancies_language_sj,
-                       title_sj))
-
-
-def get_hh_vacancies_statistics(popular_languages,
-                                moscow_id,
-                                amount_of_days,
-                                max_pages_hh,
-                                amount_of_vacancies_on_page,
-                                headers_hh):
+def get_hh_vacancies_statistics(popular_languages):
     """Get and process HeadHunter vacancies for multiple languages."""
     vacancies_language_hh = {}
     for program_language in popular_languages:
-        vacancies_hh_found, average_hh_salary, vacancies_hh_processed, vacancies_hh, salaries_hh = get_hh_vacancies(program_language,
-                                                                                                                    moscow_id,
-                                                                                                                    amount_of_days,
-                                                                                                                    max_pages_hh,
-                                                                                                                    amount_of_vacancies_on_page,
-                                                                                                                    headers_hh)
+        vacancies_hh_found, average_hh_salary, vacancies_hh_processed, vacancies_hh, salaries_hh = get_hh_vacancies(program_language)
         try:
             average_hh_salary = sum(salaries_hh) // len(salaries_hh)
         except ZeroDivisionError:
@@ -202,15 +170,11 @@ def get_hh_vacancies_statistics(popular_languages,
     return vacancies_language_hh
 
 
-def get_sj_vacancies_statistics(popular_languages, max_number_of_results, publication_period, max_pages_sj, headers_sj):
+def get_sj_vacancies_statistics(popular_languages):
     """Get and process SuperJob vacancies for multiple languages."""
     vacancies_language_sj = {}
     for program_language_sj in popular_languages:
-        vacancies_sj_found, average_sj_salary, vacancies_sj_processed, vacancies_sj, salaries_sj = get_sj_vacancies(program_language_sj,
-                                                                                                                    max_number_of_results,
-                                                                                                                    publication_period,
-                                                                                                                    max_pages_sj,
-                                                                                                                    headers_sj)
+        vacancies_sj_found, average_sj_salary, vacancies_sj_processed, vacancies_sj, salaries_sj = get_sj_vacancies(program_language_sj)
         try:
             average_sj_salary = sum(salaries_sj) // len(salaries_sj)
         except ZeroDivisionError:
@@ -222,6 +186,19 @@ def get_sj_vacancies_statistics(popular_languages, max_number_of_results, public
         }
         vacancies_language_sj[program_language_sj] = salary_sj_statistics
     return vacancies_language_sj
+
+
+def main():
+    load_dotenv(find_dotenv())
+    popular_languages = ['C', 'C++', 'C#', 'Java', 'JavaScript', 'Python', 'Ruby', 'Rust']
+    title_hh = 'HEADHUNTER (Moscow)'
+    title_sj = 'SUPERJOB (Moscow)'
+
+    vacancies_language_hh = get_hh_vacancies_statistics(popular_languages)
+    print(create_table(vacancies_language_hh, title_hh))
+
+    vacancies_language_sj = get_sj_vacancies_statistics(popular_languages)
+    print(create_table(vacancies_language_sj, title_sj))
 
 
 if __name__ == '__main__':
